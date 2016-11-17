@@ -1,0 +1,7 @@
+to receive other ppls changes:
+git pull origin master
+
+to update the server with your changes:
+git add -A #gathers up all the changed files
+git commit -m "message to go along with your changes"
+git push -u origin master #sends your changes to server
