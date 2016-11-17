@@ -31,9 +31,13 @@ def emission(f):
                     List[keys[tList[1][0:5]]][tList[0]] += 1
                 except:
                     List[keys[tList[1][0:5]]][tList[0]] = 1
-    for i in range(7):
-        for a in List[i]:
-            List[i][a] /= ListCount[i]
+    print ListCount
+    for j in range(len(List)):
+        List[j]['UnknownParamPlaceholder'] = 1
+        ListCount[j] += 1
+        print ListCount[j]
+        for a in List[j]:
+            List[j][a] /= ListCount[j]
 
     #add 'unk' string for unknowns in every dictionary
 
@@ -89,36 +93,33 @@ def transmission(f):
     print t_bne
     print t_bn
 
-    
-    
 
-def countException(d,c,w):
-    for a in d:
-        d[a] *= c
-    c+= 1
-    d[w] = 1
-    for b in d:
-        d[b] /= c
-    return c
 
 def simplePredictor(f):
     counter = 0
+    StateList = []
+    SubList = []
     for lines in f:
-        if counter <100:
-            ListProb = [0,0,0,0,0,0,0]
-            counter += 1
-            lines = lines.strip('\n')
-            if len(lines) > 0:
+        ListProb = [0,0,0,0,0,0,0]
+        counter += 1
+        lines = lines.strip('\n')
+        if lines != '':
+            for i in range(7):
+                try:
+                    ListProb[i] = List[i][lines]
+                except:
+                    pass
+            if sum(ListProb) == 0:
                 for i in range(7):
-                    try:
-                        ListProb[i] = List[i][lines]
-                    except:
-                        ListCount[i] = countException(List[i],ListCount[i],lines)
-                        ListProb[i] = List[i][lines]
+                    ListProb[i] = List[i]['UnknownParamPlaceholder']       
             state = max(xrange(len(ListProb)), key=ListProb.__getitem__)
-            print(lines+ " " + str(invkeys[state]))
+            SubList.append(str(invkeys[state]))
+            #print(lines+ " " + str(invkeys[state]))
         else:
-            break
+            StateList.append(SubList)
+            SubList = []
+            
+    return(StateList)
 #testd = {'tt' : 10,'ttt':20,'tttt':30}
 #count = 60.0
 #for i in testd:
@@ -126,10 +127,12 @@ def simplePredictor(f):
 #count = countException(testd,count,'t')
 #print testd
 #print count
-f = open('train.txt',"r")
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/train.txt',"r")
 emission(f)
 f.close()
-f = open('train.txt',"r")
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/dev.in',"r")
+print(simplePredictor(f))
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/train.txt',"r")
 transmission(f)
 f.close()
 
@@ -141,4 +144,3 @@ f.close()
 #print ListCount
 
 #simplePredictor(f2)
-
