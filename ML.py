@@ -1,4 +1,7 @@
-
+from math import *
+import sys
+import numpy
+import copy
 #f2 = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/EN/dev.in',"r")
 o = {}
 bp = {}
@@ -12,6 +15,17 @@ invkeys = {0 : 'O', 1 : 'B-positive', 2 : 'B-neutral', 3 : 'B-negative', 4: 'I-p
 List = [o,bp,bn,bne,ip,inn,ine]
 ListCount = [0,0,0,0,0,0,0]
 
+
+t_o = {}
+t_bn ={}
+t_bp = {}
+t_bne = {}
+t_ip = {}
+t_in = {}
+t_ine = {}
+start = {}
+tpList = [t_o, t_bp, t_bn,t_bne, t_ip, t_in, t_ine]
+t_keys = {'O' : t_o, 'B-positive' : t_bp, 'B-neutral' : t_bne, 'B-negative' : t_bn, 'I-positive' : t_ip, 'I-neutral' : t_ine, 'I-negative' : t_in, 'start' : start}
 
 #modifies above dictionaries
 def emission(f):
@@ -31,34 +45,17 @@ def emission(f):
                     List[keys[tList[1][0:5]]][tList[0]] += 1
                 except:
                     List[keys[tList[1][0:5]]][tList[0]] = 1
-    print ListCount
+
     for j in range(len(List)):
         List[j]['UnknownParamPlaceholder'] = 1
         ListCount[j] += 1
-        print ListCount[j]
         for a in List[j]:
             List[j][a] /= ListCount[j]
 
     #add 'unk' string for unknowns in every dictionary
 
 def transmission(f):
-    t_o = {}
-    t_bn ={}
-    t_bp = {}
-    t_bne = {}
-    t_ip = {}
-    t_in = {}
-    t_ine = {}
-    start = {}
-    t_keys = {'O' : t_o, 'B-positive' : t_bp, 'B-neutral' : t_bne, 'B-negative' : t_bn, 'I-positive' : t_ip, 'I-neutral' : t_ine, 'I-negative' : t_in, 'start' : start}
-    totalCounts = {'O': ListCount[0],
-                   'B-positive': ListCount[1],
-                   'B-neutral': ListCount[2],
-                   'B-negative' : ListCount[3],
-                   'I-positive': ListCount[4],
-                   'I-neutral': ListCount[5],
-                   'I-negative': ListCount[6],
-                   'start': 0}
+
 
     prevline = 's start'
     for line in f:
@@ -88,10 +85,7 @@ def transmission(f):
         for k,v in dic.iteritems():
             dic[k] = v/float(totalCounts[label])
 
-    print t_o
-    print t_bp
-    print t_bne
-    print t_bn
+
 
 
 #takes in text file, returns open list of 
@@ -101,7 +95,6 @@ def simplePredictor(f):
     SubList = []
     for lines in f:
         ListProb = [0,0,0,0,0,0,0]
-        counter += 1
         lines = lines.strip('\n')
         lines = lines.split(' ')
         if lines[0] != '':
@@ -122,6 +115,96 @@ def simplePredictor(f):
             
     return(StateList)
 
+<<<<<<< HEAD
+def ViterbiAlgorithm(f,TopParam = 1):
+    word = 'start'
+    counter = 0
+    Paths = []
+    flag = 0
+    for x in List:
+        for y in x:
+            x[y] = log(x[y])
+    for w in tpList:
+        for v in w:
+            w[v] = log(w[v])
+    for s in start:
+        start[s] = log(start[s])
+        
+    for lines in f:
+        if counter < 2000:
+ 
+            lines = lines.strip('\n')
+            if lines != '':
+                Column = []
+                for i in range(7):
+                    Column.append([])
+                if word == 'start':
+                    for i in range(len(Column)):
+                            try:
+                                Column[i].append([start[invkeys[i]],'start'])
+                            except:
+                                Column[i].append([-sys.maxint-1,'start'])
+
+                else:
+                    actualParam = TopParam
+                    if len(keys)**counter < TopParam:
+                        actualParam = len(keys)**counter
+                    prevActualParam = TopParam if len(keys)**(counter-1)>TopParam else len(keys)**(counter-1)
+                    values = []
+                    for w in range(7):
+                        for k in range(prevActualParam):
+                            try:
+                                values.append(Paths[counter-1][w][k][0]+List[w][word])
+                            except:
+                                values.append(Paths[counter-1][w][k][0]+List[w]['UnknownParamPlaceholder'])
+
+                    for i in range(len(Column)):
+                        transitionValues = []
+                        for kthScore in range(len(values)):
+                            try:
+                                transitionValues.append(values[kthScore]+tpList[kthScore/prevActualParam][invkeys[i]])
+                            except:
+                                transitionValues.append(values[kthScore]-sys.maxint)
+                        store = copy.deepcopy(transitionValues)             
+                        BestIndex = argMaxKBest(store,actualParam)
+                        for j in range(TopParam):
+                            Column[i].append([transitionValues[BestIndex[j]],invkeys[BestIndex[j]/prevActualParam]])
+                        
+                        
+                        if flag <7:
+                            flag += 1
+                    
+
+                word = lines
+                Paths.append(Column)
+                counter += 1
+                print(Column)
+                print('#####################################################################################')
+
+def argMaxKBest(values,Params):
+    Best = []
+    for i in range(Params):
+        Best.append(numpy.argmax(values))
+        values[Best[i]] = -(2+i)*sys.maxint-1
+    return Best
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/train.txt',"r")
+emission(f)
+f.close()
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/dev.in',"r")
+#print(simplePredictor(f))
+f.close()
+totalCounts = {'O': ListCount[0],
+               'B-positive': ListCount[1],
+               'B-neutral': ListCount[2],
+               'B-negative' : ListCount[3],
+               'I-positive': ListCount[4],
+               'I-neutral': ListCount[5],
+               'I-negative': ListCount[6],
+               'start': 0}
+               
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/train.txt',"r")
+transmission(f)
+=======
 #takes in file, returns nested list of sentence states
 def get_gold_from_file(f):
     total = []
@@ -211,12 +294,15 @@ f.close()
 f = open('train.txt',"r")
 predicted = simplePredictor(f)
 print get_f(gold, predicted)
+>>>>>>> a25c6cf1cb9fbcb4815624bcfe4e777537b1b248
 f.close()
 #f = open('train.txt',"r")
 #transmission(f)
 #f.close()
 
+f = open('C:/Users/Stanley Loh/Desktop/Term 6 EPD/Machine Learning/Project/gitML/dev.in',"r")
 
+ViterbiAlgorithm(f,5)
 
 #for i in range(7):
 #    print('###################################################################################################################################')
